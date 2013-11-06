@@ -14,9 +14,14 @@ static NSString * const kIdentifier = @"MeshIdentifier";
 
 @interface MeshViewController ()
 
+@property (weak, nonatomic) IBOutlet UITextField *registerTextField;
+@property (weak, nonatomic) IBOutlet UIButton *registerButton;
+- (IBAction)registerAction:(id)sender;
+
 @property (nonatomic, strong) NSArray *detectedBeacons;
 @property (nonatomic, strong) CLBeaconRegion *beaconRegion;
 @property (nonatomic, strong) CLLocationManager *locationManager;
+@property (nonatomic, strong) NSString *registeredName;
 
 @end
 
@@ -57,6 +62,7 @@ static NSString * const kIdentifier = @"MeshIdentifier";
 {
     [super viewDidLoad];
     [self startRanging];
+    self.registerTextField.delegate = self;
     
 }
 
@@ -113,4 +119,25 @@ static NSString * const kIdentifier = @"MeshIdentifier";
     return cell;
 }
 
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    NSLog(@"textFieldShouldReturn()");
+    [self.registerTextField resignFirstResponder];
+    [self register];
+    return YES;
+}
+
+- (IBAction)registerAction:(id)sender {
+    NSLog(@"registerAction()");
+    if (sender != self.registerButton) return;
+    [self.registerTextField resignFirstResponder];
+    [self register];
+}
+
+- (void)register {
+    if (self.registerTextField.text.length > 0) {
+        NSLog(@"Got registered name %@", self.registerTextField.text);
+        self.registeredName =  self.registerTextField.text;
+    }
+}
 @end

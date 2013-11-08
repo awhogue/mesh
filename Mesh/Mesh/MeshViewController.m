@@ -33,6 +33,47 @@ static NSString * const kIdentifier = @"MeshIdentifier";
 
 @implementation MeshViewController
 
+# pragma mark Initialization
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    [self setupMajorMinorIdentifiers];
+    [self startRanging];
+    self.registerTextField.delegate = self;
+}
+
+- (void)setupMajorMinorIdentifiers
+{
+    NSUUID *idForVendor;
+#if TARGET_IPHONE_SIMULATOR
+    idForVendor = [[NSUUID alloc] initWithUUIDString:@"8DC75C8A-835A-40AB-BD5C-09E86B05924D"];
+#else
+    idForVendor = [UIDevice currentDevice].identifierForVendor;
+#endif
+    unsigned majorID = 0;
+    unsigned minorID = 0;
+    NSString *idForVendorString = [idForVendor UUIDString];
+    NSLog(@"%@", idForVendorString);
+    NSScanner *majorScanner = [NSScanner scannerWithString:[idForVendorString substringToIndex:8]];
+    [majorScanner scanHexInt:&majorID];
+    NSScanner *minorScanner = [NSScanner scannerWithString:[idForVendorString substringFromIndex:24]];
+    [minorScanner scanHexInt:&minorID];
+    self.beaconMajorID = [NSNumber numberWithUnsignedInt:majorID];
+    self.beaconMinorID = [NSNumber numberWithUnsignedInt:minorID];
+    NSLog(@"Got major,minor IDs: %@,%@", self.beaconMajorID, self.beaconMinorID);
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    NSLog(@"didReceiveMemoryWarning");
+    // Dispose of any resources that can be recreated.
+}
+
+# pragma mark Beacon Management
+
 - (void)createBeaconRegion
 {
     if (self.beaconRegion)
@@ -67,41 +108,7 @@ static NSString * const kIdentifier = @"MeshIdentifier";
     NSLog(@"Ranging turned on for region: %@.", self.beaconRegion);
 }
 
-- (void)setupMajorMinorIdentifiers
-{
-    NSUUID *idForVendor;
-#if TARGET_IPHONE_SIMULATOR
-    idForVendor = [[NSUUID alloc] initWithUUIDString:@"8DC75C8A-835A-40AB-BD5C-09E86B05924D"];
-#else
-    idForVendor = [UIDevice currentDevice].identifierForVendor;
-#endif
-    unsigned majorID = 0;
-    unsigned minorID = 0;
-    NSString *idForVendorString = [idForVendor UUIDString];
-    NSLog(@"%@", idForVendorString);
-    NSScanner *majorScanner = [NSScanner scannerWithString:[idForVendorString substringToIndex:8]];
-    [majorScanner scanHexInt:&majorID];
-    NSScanner *minorScanner = [NSScanner scannerWithString:[idForVendorString substringFromIndex:24]];
-    [minorScanner scanHexInt:&minorID];
-    self.beaconMajorID = [NSNumber numberWithUnsignedInt:majorID];
-    self.beaconMinorID = [NSNumber numberWithUnsignedInt:minorID];
-    NSLog(@"Got major,minor IDs: %@,%@", self.beaconMajorID, self.beaconMinorID);
-}
-
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-    [self setupMajorMinorIdentifiers];
-    [self startRanging];
-    self.registerTextField.delegate = self;
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    NSLog(@"didReceiveMemoryWarning");
-    // Dispose of any resources that can be recreated.
-}
+# pragma mark Table View Management
 
 // TODO(ahogue): Replace this with a call to the server to pull a username for the beacon.
 - (NSString *)detailsStringForBeacon:(CLBeacon*)beacon
@@ -149,6 +156,8 @@ static NSString * const kIdentifier = @"MeshIdentifier";
     
     return cell;
 }
+
+# pragma mark User Registration
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {

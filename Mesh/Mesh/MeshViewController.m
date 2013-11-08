@@ -36,7 +36,10 @@ static NSString * const kIdentifier = @"MeshIdentifier";
         return;
     
     NSUUID *proximityUUID = [[NSUUID alloc] initWithUUIDString:kUUID];
-    self.beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:proximityUUID identifier:kIdentifier];
+    self.beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:proximityUUID
+                                                                major:[self.beaconMajorID unsignedIntegerValue]
+                                                                minor:[self.beaconMinorID unsignedIntegerValue]
+                                                           identifier:kIdentifier];
 }
 
 - (void)startRanging

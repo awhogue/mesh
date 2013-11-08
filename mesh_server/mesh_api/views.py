@@ -22,7 +22,8 @@ def register(request):
   name = request.GET['name']
   major = request.GET['major']
   minor = request.GET['minor']
-  user = create_or_find_user(name, major, minor)
+  print '/register [%s,%s,%s]' % (name, major, minor)
+  user = create_or_find_user(name, int(major), int(minor))
   print 'user: ', user
   return HttpResponse(user.json())
 

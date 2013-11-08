@@ -7,6 +7,7 @@
 //
 
 #import "MeshViewController.h"
+#import "MeshUser.h"
 
 static NSString * const kBeaconCellIdentifier = @"BeaconCell";
 static NSString * const kUUID = @"0D5067C7-E8AD-41D2-A6DE-6C1325936DA0";
@@ -23,8 +24,10 @@ static NSString * const kIdentifier = @"MeshIdentifier";
 @property (nonatomic, strong) CLBeaconRegion *beaconRegion;
 @property (nonatomic, strong) CLLocationManager *locationManager;
 @property (nonatomic, strong) NSString *registeredName;
-@property (nonatomic, weak) NSNumber *beaconMajorID;
-@property (nonatomic, weak) NSNumber *beaconMinorID;
+@property (nonatomic, strong) NSNumber *beaconMajorID;
+@property (nonatomic, strong) NSNumber *beaconMinorID;
+
+@property (nonatomic, strong) NSArray *detectedUsers;
 
 @end
 
@@ -96,6 +99,7 @@ static NSString * const kIdentifier = @"MeshIdentifier";
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+    NSLog(@"didReceiveMemoryWarning");
     // Dispose of any resources that can be recreated.
 }
 
@@ -165,6 +169,38 @@ static NSString * const kIdentifier = @"MeshIdentifier";
     if (self.registerTextField.text.length > 0) {
         NSLog(@"Got registered name %@", self.registerTextField.text);
         self.registeredName =  self.registerTextField.text;
+        NSString *urlAsString = [NSString stringWithFormat:@"http://localhost:8000/register?name=%@&major=%@&minor=%@",
+                                 self.registeredName, self.beaconMajorID, self.beaconMinorID];
+        NSLog(@"Register url: %@", urlAsString);
+        NSURL *url = [[NSURL alloc] initWithString:urlAsString];
+        NSLog(@"after init");
+        [NSURLConnection sendAsynchronousRequest:[[NSURLRequest alloc] initWithURL:url] queue:[[NSOperationQueue alloc] init] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+            NSLog(@"inside completionHandler");
+            if (connectionError) {
+                [self registerHandleError:connectionError];
+            } else {
+                [self registerHandleSuccess:data];
+            }
+        }];
     }
 }
+
+- (void)registerHandleError:(NSError*)error {
+    NSLog(@"Error handling registration: %@", error);
+}
+
+- (void) registerHandleSuccess:(NSData*)data {
+    NSError *error = nil;
+    NSDictionary *parsedObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    if (error != nil) {
+        NSLog(@"Error parsing register response: %@", error);
+        return;
+    }
+    for (NSString *key in parsedObject) {
+        NSLog(@"%@ => %@", key, [parsedObject valueForKey:key]);
+    }
+    // TODO: actually do something with the registered user?
+    // TODO: display a confirmation to the user
+}
+
 @end

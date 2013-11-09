@@ -72,9 +72,11 @@ static NSString * const kMeshAPIHost = @"localhost:8000";
 
 - (void)initDummyData {
 #if TARGET_IPHONE_SIMULATOR
-    NSMutableArray *beacons = [[NSMutableArray alloc] init];
-    [beacons addObject:[[MeshBeacon alloc] initFromData:[NSNumber numberWithInt:12345] withMinor:[NSNumber numberWithInt:23456]]];
-    [beacons addObject:[[MeshBeacon alloc] initFromData:[NSNumber numberWithInt:9876] withMinor:[NSNumber numberWithInt:54321]]];
+    NSMutableArray *beacons =
+        [[NSMutableArray alloc] initWithObjects:
+         [[MeshBeacon alloc] initFromData:[NSNumber numberWithInt:12345] withMinor:[NSNumber numberWithInt:23456]],
+         [[MeshBeacon alloc] initFromData:[NSNumber numberWithInt:9876] withMinor:[NSNumber numberWithInt:54321]],
+         nil];
     
     [self fetchUsersForBeacons:beacons];
 #endif

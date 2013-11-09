@@ -23,6 +23,7 @@
 		920E2C7A1816ACAE007F7AEF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 920E2C781816ACAE007F7AEF /* InfoPlist.strings */; };
 		920E2C7C1816ACAE007F7AEF /* MeshTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 920E2C7B1816ACAE007F7AEF /* MeshTests.m */; };
 		9290F257182D1F4F001B0CC6 /* MeshUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 9290F256182D1F4F001B0CC6 /* MeshUser.m */; };
+		9290F25A182DCB3E001B0CC6 /* MeshBeacon.m in Sources */ = {isa = PBXBuildFile; fileRef = 9290F259182DCB3E001B0CC6 /* MeshBeacon.m */; };
 		92DCA2C918186B0A004DE451 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92DCA2C818186B0A004DE451 /* CoreLocation.framework */; };
 		92DCA2CB18186B11004DE451 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92DCA2CA18186B11004DE451 /* CoreBluetooth.framework */; };
 /* End PBXBuildFile section */
@@ -60,6 +61,8 @@
 		920E2C7B1816ACAE007F7AEF /* MeshTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MeshTests.m; sourceTree = "<group>"; };
 		9290F255182D1F4F001B0CC6 /* MeshUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshUser.h; sourceTree = "<group>"; };
 		9290F256182D1F4F001B0CC6 /* MeshUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MeshUser.m; sourceTree = "<group>"; };
+		9290F258182DCB3E001B0CC6 /* MeshBeacon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshBeacon.h; sourceTree = "<group>"; };
+		9290F259182DCB3E001B0CC6 /* MeshBeacon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MeshBeacon.m; sourceTree = "<group>"; };
 		92DCA2C818186B0A004DE451 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		92DCA2CA18186B11004DE451 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -131,6 +134,8 @@
 				920E2C621816ACAD007F7AEF /* Main_iPad.storyboard */,
 				920E2C651816ACAD007F7AEF /* MeshViewController.h */,
 				920E2C661816ACAD007F7AEF /* MeshViewController.m */,
+				9290F258182DCB3E001B0CC6 /* MeshBeacon.h */,
+				9290F259182DCB3E001B0CC6 /* MeshBeacon.m */,
 				920E2C681816ACAD007F7AEF /* Images.xcassets */,
 				920E2C541816ACAD007F7AEF /* Supporting Files */,
 				9290F255182D1F4F001B0CC6 /* MeshUser.h */,
@@ -275,6 +280,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				920E2C671816ACAD007F7AEF /* MeshViewController.m in Sources */,
+				9290F25A182DCB3E001B0CC6 /* MeshBeacon.m in Sources */,
 				9290F257182D1F4F001B0CC6 /* MeshUser.m in Sources */,
 				920E2C5A1816ACAD007F7AEF /* main.m in Sources */,
 				920E2C5E1816ACAD007F7AEF /* MeshAppDelegate.m in Sources */,

@@ -10,4 +10,8 @@
 
 @implementation MeshUser
 
+- (NSString*)toString {
+    return [NSString stringWithFormat:@"%@: %@,%@", self.name, self.major, self.minor];
+}
+
 @end

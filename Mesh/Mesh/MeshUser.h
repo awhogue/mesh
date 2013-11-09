@@ -14,4 +14,5 @@
 @property (strong, nonatomic) NSNumber *major;
 @property (strong, nonatomic) NSNumber *minor;
 
+-(NSString*)toString;
 @end

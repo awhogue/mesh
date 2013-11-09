@@ -45,3 +45,5 @@ def find_users(request, id_param):
       
       
       
+def home(request):
+  return HttpResponse('Nothing to see here')

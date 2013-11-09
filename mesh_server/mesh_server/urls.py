@@ -7,6 +7,7 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('mesh_api.views',
                        url(r'^find_users/(?P<id_param>[\d,;]+)', 'find_users'),
                        url(r'^register', 'register'),
+                       url(r'', 'home'),
     # Examples:
     # url(r'^$', 'mesh_server.views.home', name='home'),
     # url(r'^mesh_server/', include('mesh_server.foo.urls')),

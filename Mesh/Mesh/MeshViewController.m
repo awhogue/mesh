@@ -14,7 +14,9 @@ static NSString * const kBeaconCellIdentifier = @"BeaconCell";
 static NSString * const kUUID = @"0D5067C7-E8AD-41D2-A6DE-6C1325936DA0";
 static NSString * const kIdentifier = @"MeshIdentifier";
 
-static NSString * const kMeshAPIHost = @"localhost:8000";
+//static NSString * const kMeshAPIHost = @"localhost:8000";
+static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanstalk.com/";
+
 
 @interface MeshViewController ()
 

@@ -14,6 +14,9 @@ static NSString * const kBeaconCellIdentifier = @"BeaconCell";
 static NSString * const kUUID = @"0D5067C7-E8AD-41D2-A6DE-6C1325936DA0";
 static NSString * const kIdentifier = @"MeshIdentifier";
 
+// NSUserDefaults keys
+static NSString * const kRegisteredNameKey = @"registeredName";
+
 //static NSString * const kMeshAPIHost = @"localhost:8000";
 static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanstalk.com";
 
@@ -44,10 +47,18 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    NSUserDefaults *standardDefaults = [NSUserDefaults standardUserDefaults];
+    NSString* regName = [standardDefaults stringForKey:kRegisteredNameKey];
+    if (regName != nil) {
+        self.registerTextField.text = regName;
+        self.registerButton.userInteractionEnabled = NO;
+        [self.registerButton setTitle:@"Registered!" forState:UIControlStateNormal];
+    }
+    
     [self setupMajorMinorIdentifiers];
     [self startRanging];
     [self initDummyData];
-    NSLog(@"%d beacons", [self.detectedBeacons count]);
+    NSLog(@"%lu beacons", (unsigned long)[self.detectedBeacons count]);
     [self turnOnAdvertising];
     self.registerTextField.delegate = self;
     self.beaconTable.dataSource = self;
@@ -108,6 +119,7 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
                                                                      major:rand()
                                                                      minor:rand()
                                                                 identifier:self.beaconRegion.identifier];
+    region.notifyEntryStateOnDisplay = YES;
     NSDictionary *beaconPeripheralData = [region peripheralDataWithMeasuredPower:nil];
     [self.peripheralManager startAdvertising:beaconPeripheralData];
     
@@ -426,6 +438,7 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
     if (self.registerTextField.text.length > 0) {
         NSLog(@"Got registered name %@", self.registerTextField.text);
         self.registeredName =  self.registerTextField.text;
+
         NSString *urlAsString = [NSString stringWithFormat:@"http://%@/register?name=%@&major=%@&minor=%@",
                                  kMeshAPIHost, self.registeredName, self.beaconMajorID, self.beaconMinorID];
         NSLog(@"Register url: %@", urlAsString);
@@ -454,8 +467,11 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
     for (NSString *key in parsedObject) {
         NSLog(@"%@ => %@", key, [parsedObject valueForKey:key]);
     }
-    // TODO: actually do something with the registered user?
-    // TODO: display a confirmation to the user
+
+    NSUserDefaults *standardDefaults = [NSUserDefaults standardUserDefaults];
+    [standardDefaults setObject:self.registeredName forKey:@"registeredName"];
+    self.registerButton.userInteractionEnabled = NO;
+    [self.registerButton setTitle:@"Registered!" forState:UIControlStateNormal];
 }
 
 @end

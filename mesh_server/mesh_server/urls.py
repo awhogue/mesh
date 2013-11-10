@@ -5,7 +5,7 @@ from django.conf.urls import patterns, include, url
 # admin.autodiscover()
 
 urlpatterns = patterns('mesh_api.views',
-                       url(r'^find_users/(?P<id_param>[\d,;]+)', 'find_users'),
+                       url(r'^find_users/?(?P<id_param>[\d,;]+)?', 'find_users'),
                        url(r'^register', 'register'),
                        url(r'', 'home'),
     # Examples:

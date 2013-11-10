@@ -31,6 +31,7 @@ def register(request):
 # The "ids" parameter is a sequence of "major,minor" entries, separated by semi-colons.
 # E.g. /find_users/1,2;8,10;37,21
 def find_users(request, id_param):
+  if id_param is None: return HttpResponse('{ }')
   ids = [id.split(',') for id in id_param.split(';')]
   user_jsons = {}
   for id in ids:

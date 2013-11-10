@@ -40,7 +40,10 @@ def find_users(request, id_param):
       user_jsons[','.join(id)] = user.raw_json()
     except SimpleUser.DoesNotExist:
       print 'find_users: Client requested an unknown major,minor pair: %s,%s' % (id[0], id[1])
-      user_jsons[','.join(id)] = { }
+      user_jsons[','.join(id)] = { 'name': 'unknown',
+                                   'major': int(id[0]),
+                                   'minor': int(id[1]),
+                                   }
 
   return HttpResponse(json.dumps(user_jsons))
       

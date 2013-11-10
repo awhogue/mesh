@@ -12,7 +12,7 @@
 
 static NSString * const kBeaconCellIdentifier = @"BeaconCell";
 static NSString * const kUUID = @"0D5067C7-E8AD-41D2-A6DE-6C1325936DA0";
-static NSString * const kIdentifier = @"MeshIdentifier";
+static NSString * const kIdentifier = @"org.secondthought.MeshBeaconRegion";
 
 // NSUserDefaults keys
 static NSString * const kRegisteredNameKey = @"registeredName";
@@ -116,11 +116,16 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
     time_t t;
     srand((unsigned) time(&t));
     CLBeaconRegion *region = [[CLBeaconRegion alloc] initWithProximityUUID:self.beaconRegion.proximityUUID
-                                                                     major:rand()
-                                                                     minor:rand()
+                                                                     major:[self.beaconMajorID integerValue]
+                                                                     minor:[self.beaconMinorID integerValue]
                                                                 identifier:self.beaconRegion.identifier];
     region.notifyEntryStateOnDisplay = YES;
     NSDictionary *beaconPeripheralData = [region peripheralDataWithMeasuredPower:nil];
+    if (!self.peripheralManager) {
+        self.peripheralManager = [[CBPeripheralManager alloc] initWithDelegate:self
+                                                                         queue:nil
+                                                                       options:nil];
+    }
     [self.peripheralManager startAdvertising:beaconPeripheralData];
     
     NSLog(@"Turning on advertising for region: %@.", region);
@@ -133,6 +138,7 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
     
     NSUUID *proximityUUID = [[NSUUID alloc] initWithUUIDString:kUUID];
     self.beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:proximityUUID identifier:kIdentifier];
+    [self.locationManager startMonitoringForRegion:self.beaconRegion];
 }
 
 - (void)peripheralManagerDidStartAdvertising:(CBPeripheralManager *)peripheralManager error:(NSError *)error
@@ -151,6 +157,7 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
 {
     if (peripheralManager.state != CBPeripheralManagerStatePoweredOn) {
         NSLog(@"Peripheral manager is off.");
+        [self.peripheralManager stopAdvertising];
         return;
     }
     
@@ -238,12 +245,9 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
     return indexPaths;
 }
 
-// Find the index paths into the table view of newly detected beacons.
-- (NSArray *)indexPathsOfInsertedBeacons:(NSArray *)beacons
+- (NSArray *)insertedBeacons:(NSArray *)beacons
 {
-    NSMutableArray *indexPaths = nil;
-    
-    NSUInteger row = 0;
+    NSMutableArray *newBeacons = nil;
     for (MeshBeacon *beacon in beacons) {
         BOOL isNewBeacon = YES;
         for (MeshBeacon *existingBeacon in self.detectedBeacons) {
@@ -255,12 +259,24 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
             }
         }
         if (isNewBeacon) {
-            if (!indexPaths)
-                indexPaths = [NSMutableArray new];
+            if (!newBeacons)
+                newBeacons = [NSMutableArray new];
             NSLog(@"%@,%@ new beacon", beacon.major, beacon.minor);
-            [indexPaths addObject:[NSIndexPath indexPathForRow:row inSection:0]];
+            [newBeacons addObject:beacon];
         }
-        row++;
+    }
+    return newBeacons;
+}
+
+// Find the index paths into the table view of newly detected beacons.
+- (NSArray *)indexPathsOfInsertedBeacons:(NSArray *)insertedBeacons
+{
+    NSMutableArray *indexPaths = nil;
+
+    for (NSUInteger row = 0; row < insertedBeacons.count; row++) {
+        if (!indexPaths)
+            indexPaths = [NSMutableArray new];
+        [indexPaths addObject:[NSIndexPath indexPathForRow:row inSection:0]];
     }
 
     NSLog(@"index paths of inserted beacons: %@", indexPaths);
@@ -336,9 +352,12 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
     } else {
         NSLog(@"Found %lu beacons.", (unsigned long)[filteredBeacons count]);
     }
-    
+
+    NSArray *insertedBeacons = [self insertedBeacons:beacons];
+    [self notifyForBeacons:insertedBeacons];
+
+    NSArray *insertedRows = [self indexPathsOfInsertedBeacons:insertedBeacons];
     NSArray *deletedRows = [self indexPathsOfRemovedBeacons:filteredBeacons];
-    NSArray *insertedRows = [self indexPathsOfInsertedBeacons:filteredBeacons];
     NSArray *reloadedRows = nil;
     if (!deletedRows && !insertedRows) {
         reloadedRows = [self indexPathsForBeacons:filteredBeacons];
@@ -355,6 +374,21 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
         [self.beaconTable reloadRowsAtIndexPaths:reloadedRows withRowAnimation:UITableViewRowAnimationNone];
     [self.beaconTable endUpdates];
 }
+
+- (void)notifyForBeacons:(NSArray*)beacons {
+    for (MeshBeacon *beacon in beacons) {
+        MeshUser *user = [self.detectedUsers valueForKey:[NSString stringWithFormat:@"%@,%@", beacon.major, beacon.minor]];
+        UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+        localNotification.alertBody = [NSString stringWithFormat:@"%@ is nearby!", user.name];
+        localNotification.alertAction = @"View";
+        localNotification.applicationIconBadgeNumber = 2;
+        [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+        NSLog(@"Sent notification for %@", user.name);
+    }
+    
+    
+}
+
 
 // Parse the JSON response for /find_users and return a dictionary mapping "major,minor" to MeshUser*.
 -(void)parseUserJSON:(NSData*)data {

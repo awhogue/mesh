@@ -15,7 +15,7 @@ static NSString * const kUUID = @"0D5067C7-E8AD-41D2-A6DE-6C1325936DA0";
 static NSString * const kIdentifier = @"MeshIdentifier";
 
 //static NSString * const kMeshAPIHost = @"localhost:8000";
-static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanstalk.com/";
+static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanstalk.com";
 
 
 @interface MeshViewController ()
@@ -27,6 +27,7 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
 
 @property (nonatomic, strong) NSArray *detectedBeacons;
 @property (nonatomic, strong) CLBeaconRegion *beaconRegion;
+@property (nonatomic, strong) CBPeripheralManager *peripheralManager;
 @property (nonatomic, strong) CLLocationManager *locationManager;
 @property (nonatomic, strong) NSString *registeredName;
 @property (nonatomic, strong) NSNumber *beaconMajorID;
@@ -47,6 +48,7 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
     [self startRanging];
     [self initDummyData];
     NSLog(@"%d beacons", [self.detectedBeacons count]);
+    [self turnOnAdvertising];
     self.registerTextField.delegate = self;
     self.beaconTable.dataSource = self;
 }
@@ -93,16 +95,55 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
 
 #pragma mark Beacon Broadcasting
 
+- (void)turnOnAdvertising
+{
+    if (self.peripheralManager.state != CBPeripheralManagerStatePoweredOn) {
+        NSLog(@"Peripheral manager is off.");
+        return;
+    }
+    
+    time_t t;
+    srand((unsigned) time(&t));
+    CLBeaconRegion *region = [[CLBeaconRegion alloc] initWithProximityUUID:self.beaconRegion.proximityUUID
+                                                                     major:rand()
+                                                                     minor:rand()
+                                                                identifier:self.beaconRegion.identifier];
+    NSDictionary *beaconPeripheralData = [region peripheralDataWithMeasuredPower:nil];
+    [self.peripheralManager startAdvertising:beaconPeripheralData];
+    
+    NSLog(@"Turning on advertising for region: %@.", region);
+}
+
 - (void)createBeaconRegion
 {
     if (self.beaconRegion)
         return;
     
     NSUUID *proximityUUID = [[NSUUID alloc] initWithUUIDString:kUUID];
-    self.beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:proximityUUID
-                                                                major:[self.beaconMajorID unsignedIntegerValue]
-                                                                minor:[self.beaconMinorID unsignedIntegerValue]
-                                                           identifier:kIdentifier];
+    self.beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:proximityUUID identifier:kIdentifier];
+}
+
+- (void)peripheralManagerDidStartAdvertising:(CBPeripheralManager *)peripheralManager error:(NSError *)error
+{
+    if (error) {
+        NSLog(@"Couldn't turn on advertising: %@", error);
+        return;
+    }
+    
+    if (peripheralManager.isAdvertising) {
+        NSLog(@"Turned on advertising.");
+    }
+}
+
+- (void)peripheralManagerDidUpdateState:(CBPeripheralManager *)peripheralManager
+{
+    if (peripheralManager.state != CBPeripheralManagerStatePoweredOn) {
+        NSLog(@"Peripheral manager is off.");
+        return;
+    }
+    
+    NSLog(@"Peripheral manager is on.");
+    [self turnOnAdvertising];
 }
 
 - (void)startRanging
@@ -148,7 +189,7 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
 - (void)locationManager:(CLLocationManager *)manager
         didRangeBeacons:(NSArray *)beacons
                inRegion:(CLBeaconRegion *)region {
-    NSMutableArray *meshBeacons = [NSMutableArray init];
+    NSMutableArray *meshBeacons = [[NSMutableArray alloc] init];
     for (int ii = 0; ii < [beacons count]; ii++) {
         [meshBeacons addObject:[[MeshBeacon alloc] initFromCLBeacon:[beacons objectAtIndex:ii]]];
     }
@@ -288,7 +329,6 @@ static NSString * const kMeshAPIHost = @"meshserver-env-ppqb2mkh8e.elasticbeanst
     NSArray *insertedRows = [self indexPathsOfInsertedBeacons:filteredBeacons];
     NSArray *reloadedRows = nil;
     if (!deletedRows && !insertedRows) {
-        NSLog(@"foo");
         reloadedRows = [self indexPathsForBeacons:filteredBeacons];
     }
     

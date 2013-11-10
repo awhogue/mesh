@@ -10,7 +10,7 @@
 @import CoreLocation;
 @import CoreBluetooth;
 
-@interface MeshViewController : UIViewController <CLLocationManagerDelegate, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>
+@interface MeshViewController : UIViewController <CLLocationManagerDelegate, CBPeripheralManagerDelegate, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>
 
 @property (nonatomic, weak) IBOutlet UITableView *beaconTable;
 
